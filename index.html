@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartOS v2.0 | The Future of School Computing</title>
+    <style>
+        :root {
+            --primary: #00aaff;
+            --bg: #050505;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at top, #111, #000);
+            color: white;
+            margin: 0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism Header */
+        header {
+            height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&q=80&w=2070');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        h1 { font-size: 4rem; margin-bottom: 0; letter-spacing: -2px; }
+        p.subtitle { font-size: 1.2rem; color: var(--primary); font-weight: bold; }
+
+        .container { max-width: 1100px; margin: -50px auto 50px; padding: 20px; }
+
+        /* Feature Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            padding: 30px;
+            border-radius: 20px;
+            transition: 0.3s;
+        }
+
+        .card:hover { transform: translateY(-10px); border-color: var(--primary); }
+
+        h3 { color: var(--primary); margin-top: 0; }
+
+        /* Download Button */
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: black;
+            padding: 15px 40px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 30px;
+            transition: 0.3s;
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.4);
+        }
+
+        .btn:hover { background: white; box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); }
+
+        /* Team Section */
+        footer {
+            text-align: center;
+            padding: 50px;
+            background: rgba(255,255,255,0.02);
+            border-top: 1px solid var(--glass-border);
+        }
+
+        .team { color: #888; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>SmartOS v2.0</h1>
+        <p class="subtitle">Architected for Speed. Designed for Learning.</p>
+        <a href="https://github.com/zakirya3/rufusforlinux" class="btn">Download SmartOS (via Rufus-L)</a>
+    </header>
+
+    <div class="container">
+        <div class="grid">
+            <div class="card">
+                <h3>🚀 Performance</h3>
+                <p>Optimized for HP EliteDesk and 4th-Gen Intel hardware. SmartOS uses only 800MB of RAM at idle, leaving more power for student applications.</p>
+            </div>
+            <div class="card">
+                <h3>🎨 Visual Identity</h3>
+                <p>Featuring a custom Glassmorphism UI, a clean "No-Spinner" boot experience, and 512px custom branding by Yahya Design.</p>
+            </div>
+            <div class="card">
+                <h3>🛠️ Pre-Loaded Tools</h3>
+                <p>Comes with the Thorium Browser for the fastest web experience, Python3 for coding, and specialized ICT education tools.</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p><strong>Official System of the School ICT Lab</strong></p>
+        <p class="team">Developed by: Zakariya Hassan (Lead Architect) | Yahya (UI/Design) | Azan & Nadakhatan (Engineers)</p>
+        <p>&copy; 2026 SmartOS Project. All rights reserved.</p>
+    </footer>
+
+</body>
+</html>
