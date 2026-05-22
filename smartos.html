@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartOS | The Educators Edition</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #04081A;
+      --bg-surface: rgba(255,255,255,0.025);
+      --bg-surface-hover: rgba(255,255,255,0.05);
+      --cyan: #00E5FF;
+      --cyan-dim: rgba(0, 229, 255, 0.12);
+      --cyan-glow: 0 0 35px rgba(0, 229, 255, 0.18);
+      --amber: #F59E0B;
+      --amber-dim: rgba(245, 158, 11, 0.1);
+      --emerald: #10B981;
+      --text-primary: #EEF2FF;
+      --text-secondary: #7A8BAA;
+      --text-muted: #3E4D66;
+      --border: rgba(255,255,255,0.055);
+      --border-accent: rgba(0, 229, 255, 0.2);
+      --radius-sm: 8px;
+      --radius-md: 14px;
+      --radius-lg: 20px;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      font-family: 'Outfit', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.65;
+    }
+
+    ::-webkit-scrollbar { width: 3px; }
+    ::-webkit-scrollbar-track { background: var(--bg-deep); }
+    ::-webkit-scrollbar-thumb { background: rgba(0,229,255,0.2); border-radius: 2px; }
+
+    /* ── Progress Bar ── */
+    #progress {
+      position: fixed;
+      top: 0; left: 0;
+      height: 2px; width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--amber));
+      z-index: 1000;
+      transition: width 0.08s linear;
+    }
+
+    /* ── Background ── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: -3;
+      background:
+        radial-gradient(ellipse 90% 60% at 50% -5%, rgba(0, 90, 170, 0.22) 0%, transparent 55%),
+        radial-gradient(ellipse 55% 45% at 100% 105%, rgba(0, 130, 110, 0.14) 0%, transparent 50%),
+        #04081A;
+    }
+
+    .bg-grid {
+      position: fixed; inset: 0; z-index: -2;
+      background-image:
+        linear-gradient(rgba(0,229,255,0.028) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.028) 1px, transparent 1px);
+      background-size: 64px 64px;
+      mask-image: radial-gradient(ellipse 90% 80% at 50% 35%, black 0%, transparent 100%);
+    }
+
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(110px); z-index: -1;
+      animation: drift 22s ease-in-out infinite alternate;
+    }
+    .orb-1 { width: 650px; height: 650px; top: -220px; left: -180px; background: radial-gradient(circle, rgba(0,110,210,0.16) 0%, transparent 70%); }
+    .orb-2 { width: 550px; height: 550px; bottom: -100px; right: -120px; background: radial-gradient(circle, rgba(0,170,140,0.11) 0%, transparent 70%); animation-delay: -11s; }
+    .orb-3 { width: 320px; height: 320px; top: 55%; left: 55%; background: radial-gradient(circle, rgba(245,158,11,0.055) 0%, transparent 70%); animation-delay: -6s; }
+
+    @keyframes drift {
+      from { transform: translate(0,0) scale(1); }
+      to   { transform: translate(70px, 45px) scale(1.12); }
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 900;
+      padding: 1.1rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(4, 8, 26, 0.55);
+      backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--border);
+      transition: background 0.35s ease;
+    }
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: 1.25rem; letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--amber) 150%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .nav-links { display: flex; gap: 2.25rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-secondary); text-decoration: none;
+      font-size: 0.85rem; font-weight: 500; letter-spacing: 0.01em;
+      transition: color 0.2s ease;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .nav-cta {
+      padding: 0.45rem 1.1rem;
+      border: 1px solid var(--border-accent); border-radius: var(--radius-sm);
+      color: var(--cyan) !important; font-weight: 600 !important;
+      transition: all 0.2s ease !important;
+    }
+    .nav-cta:hover { background: var(--cyan-dim) !important; box-shadow: var(--cyan-glow); }
+
+    /* ── Container ── */
+    .container { max-width: 1120px; margin: 0 auto; padding: 0 2rem; }
+
+    /* ── Reveal ── */
+    .reveal {
+      opacity: 0; transform: translateY(26px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .rd1 { transition-delay: 0.1s; }
+    .rd2 { transition-delay: 0.2s; }
+    .rd3 { transition-delay: 0.3s; }
+    .rd4 { transition-delay: 0.4s; }
+
+    /* ── Eyebrow label ── */
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 0.6rem;
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.14em;
+      text-transform: uppercase; color: var(--cyan); margin-bottom: 1.1rem;
+    }
+    .eyebrow::before {
+      content: ''; width: 22px; height: 1px;
+      background: var(--cyan); flex-shrink: 0;
+    }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      padding: 9rem 2rem 7rem; position: relative;
+    }
+    .hero-pill {
+      display: inline-flex; align-items: center; gap: 0.55rem;
+      background: rgba(0,229,255,0.055); border: 1px solid rgba(0,229,255,0.18);
+      padding: 0.38rem 1.1rem; border-radius: 9999px;
+      font-size: 0.72rem; font-weight: 600; letter-spacing: 0.09em;
+      color: var(--cyan); text-transform: uppercase; margin-bottom: 2.75rem;
+      animation: pill-pulse 3.5s ease-in-out infinite;
+    }
+    @keyframes pill-pulse {
+      0%, 100% { border-color: rgba(0,229,255,0.18); }
+      50% { border-color: rgba(0,229,255,0.45); box-shadow: 0 0 20px rgba(0,229,255,0.12); }
+    }
+    .live-dot {
+      width: 7px; height: 7px; border-radius: 50%; background: var(--emerald);
+      animation: blink 2.2s ease-in-out infinite;
+    }
+    @keyframes blink {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.25; }
+    }
+
+    .hero-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(5.5rem, 14vw, 10.5rem);
+      font-weight: 800; letter-spacing: -0.055em; line-height: 0.88;
+      margin-bottom: 1.75rem;
+    }
+    .hero-title .w1 {
+      display: block;
+      color: rgba(238,242,255,0.9);
+    }
+    .hero-title .w2 {
+      display: block;
+      background: linear-gradient(135deg, var(--cyan) 0%, #00BCD4 40%, var(--amber) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+
+    .hero-sub {
+      font-size: clamp(0.95rem, 2.2vw, 1.12rem);
+      color: var(--text-secondary); font-weight: 400;
+      letter-spacing: 0.03em; max-width: 480px; margin-bottom: 3rem;
+    }
+
+    .badges {
+      display: flex; flex-wrap: wrap;
+      justify-content: center; gap: 0.7rem;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      padding: 0.45rem 1rem;
+      background: rgba(255,255,255,0.035);
+      border: 1px solid rgba(255,255,255,0.075);
+      border-radius: 9999px;
+      font-size: 0.78rem; font-weight: 500; color: var(--text-secondary);
+      backdrop-filter: blur(8px);
+      transition: all 0.28s ease; cursor: default;
+    }
+    .badge:hover {
+      background: var(--cyan-dim); border-color: var(--border-accent);
+      color: var(--text-primary); transform: translateY(-3px);
+    }
+
+    .scroll-cue {
+      position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+      animation: cue 2.4s ease-in-out infinite;
+    }
+    .scroll-cue span { font-size: 0.65rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--text-muted); }
+    .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, rgba(0,229,255,0.35), transparent); }
+    @keyframes cue {
+      0%, 100% { opacity: 0.4; transform: translateX(-50%) translateY(0); }
+      50% { opacity: 0.85; transform: translateX(-50%) translateY(7px); }
+    }
+
+    /* ── Glass Panel ── */
+    .glass {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      backdrop-filter: blur(18px);
+    }
+
+    /* ── Section spacing ── */
+    .section { padding: 7rem 0; }
+
+    /* ── Mission ── */
+    .mission-grid {
+      display: grid; grid-template-columns: 1fr 1.8fr; gap: 4.5rem; align-items: center;
+    }
+    .mission-left h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2rem, 4.5vw, 3.25rem);
+      font-weight: 800; letter-spacing: -0.045em; line-height: 1.1;
+      margin-bottom: 1.25rem;
+    }
+    .mission-left h2 em {
+      font-style: normal;
+      background: linear-gradient(135deg, var(--cyan), var(--amber));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .mission-left p { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.7; }
+    .divider-line { width: 36px; height: 2px; background: linear-gradient(90deg, var(--cyan), transparent); margin: 1.5rem 0; }
+
+    .mission-right { padding: 2.75rem; }
+    .mission-quote {
+      font-size: 1.12rem; line-height: 1.88; color: var(--text-primary);
+      font-weight: 300;
+      border-left: 2px solid var(--cyan); padding-left: 1.75rem;
+    }
+
+    /* ── Section header ── */
+    .sec-head { text-align: center; margin-bottom: 3.75rem; }
+    .sec-title {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1.1;
+      margin-bottom: 0.8rem;
+    }
+    .sec-sub { color: var(--text-secondary); font-size: 0.975rem; }
+
+    /* ── Specs ── */
+    .specs-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.2rem;
+    }
+    .spec-card {
+      padding: 2.1rem 2.1rem 2.1rem 2.35rem;
+      transition: all 0.38s ease; cursor: default; position: relative; overflow: hidden;
+    }
+    .spec-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 2px; height: 0%;
+      background: linear-gradient(to bottom, var(--cyan), transparent);
+      transition: height 0.42s ease;
+    }
+    .spec-card:hover::before { height: 100%; }
+    .spec-card:hover {
+      border-color: rgba(0,229,255,0.14); background: var(--bg-surface-hover);
+      transform: translateY(-5px);
+      box-shadow: 0 22px 44px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.04);
+    }
+    .spec-num {
+      font-family: 'Syne', sans-serif; font-size: 0.66rem; font-weight: 700;
+      color: var(--cyan); letter-spacing: 0.1em; opacity: 0.55; margin-bottom: 0.9rem;
+    }
+    .spec-icon { font-size: 1.85rem; display: block; margin-bottom: 1.1rem; }
+    .spec-title {
+      font-family: 'Syne', sans-serif; font-size: 1.08rem; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--text-primary); margin-bottom: 0.6rem;
+    }
+    .spec-desc { color: var(--text-secondary); font-size: 0.875rem; line-height: 1.7; }
+    .spec-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 1.2rem; }
+    .spec-tag {
+      font-size: 0.68rem; font-weight: 600; padding: 2px 9px;
+      border-radius: 4px; background: rgba(0,229,255,0.07);
+      color: var(--cyan); letter-spacing: 0.04em; border: 1px solid rgba(0,229,255,0.12);
+    }
+
+    /* ── Metrics ── */
+    .metrics-wrap { padding: 0; }
+    .metrics-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+    }
+    .metric-cell {
+      padding: 3.75rem 2rem; text-align: center; position: relative;
+      transition: background 0.3s ease;
+    }
+    .metric-cell:not(:last-child)::after {
+      content: ''; position: absolute; right: 0; top: 20%; height: 60%;
+      width: 1px; background: var(--border);
+    }
+    .metric-cell:hover { background: rgba(0,229,255,0.018); }
+    .metric-val {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(2.8rem, 6vw, 4.75rem);
+      font-weight: 800; letter-spacing: -0.055em; line-height: 1;
+      margin-bottom: 0.7rem;
+    }
+    .metric-val.c { color: var(--cyan); }
+    .metric-val.a { color: var(--amber); }
+    .metric-val.e { color: var(--emerald); }
+    .metric-label {
+      font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.11em; color: var(--text-secondary);
+    }
+    .metric-note { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.45rem; }
+
+    /* ── Pricing ── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.4rem;
+      max-width: 760px; margin: 0 auto;
+    }
+    .price-card {
+      padding: 2.6rem; display: flex; flex-direction: column; gap: 0.75rem;
+      position: relative; transition: all 0.32s ease;
+    }
+    .price-card:hover { transform: translateY(-6px); }
+    .price-card.featured {
+      border-color: rgba(0,229,255,0.22);
+      background: rgba(0,229,255,0.025);
+    }
+    .price-card.featured:hover {
+      box-shadow: 0 0 0 1px rgba(0,229,255,0.14), 0 24px 55px rgba(0,0,0,0.38);
+    }
+    .rec-badge {
+      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+      font-size: 0.62rem; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 4px 14px; border-radius: 9999px;
+      background: linear-gradient(90deg, var(--cyan), var(--amber));
+      color: var(--bg-deep); white-space: nowrap;
+    }
+    .price-tier {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-secondary);
+    }
+    .price-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 3.1rem; font-weight: 800; letter-spacing: -0.045em;
+      color: var(--text-primary); line-height: 1;
+    }
+    .price-amount span { font-size: 0.95rem; font-weight: 500; color: var(--cyan); }
+    .price-desc {
+      font-size: 0.875rem; color: var(--text-secondary); line-height: 1.65;
+      border-top: 1px solid var(--border); padding-top: 1rem; margin-top: 0.25rem;
+    }
+
+    /* ── Form ── */
+    .form-outer { max-width: 700px; margin: 0 auto; }
+    .form-inner { padding: 3rem 3rem 2.75rem; }
+    .form-group { margin-bottom: 1.65rem; }
+    .form-group label {
+      display: block; font-size: 0.75rem; font-weight: 700;
+      letter-spacing: 0.07em; text-transform: uppercase;
+      color: var(--text-secondary); margin-bottom: 0.6rem;
+    }
+    .glass-input {
+      width: 100%; background: rgba(0,0,0,0.22);
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0.9rem 1.1rem; color: var(--text-primary);
+      font-family: 'Outfit', sans-serif; font-size: 0.925rem;
+      transition: all 0.22s ease; outline: none; -webkit-appearance: none;
+    }
+    .glass-input::placeholder { color: var(--text-muted); }
+    .glass-input:focus {
+      border-color: rgba(0,229,255,0.32);
+      background: rgba(0,229,255,0.025);
+      box-shadow: 0 0 0 3px rgba(0,229,255,0.065);
+    }
+    textarea.glass-input { resize: vertical; min-height: 128px; }
+
+    .submit-btn {
+      width: 100%; padding: 1.1rem 2rem; border-radius: var(--radius-sm);
+      border: 1px solid rgba(0,229,255,0.28);
+      background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(0,229,255,0.04));
+      color: var(--cyan); font-family: 'Syne', sans-serif;
+      font-size: 0.9rem; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; cursor: pointer;
+      transition: all 0.28s ease; position: relative; overflow: hidden;
+    }
+    .submit-btn::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--cyan), var(--amber));
+      opacity: 0; transition: opacity 0.28s ease;
+    }
+    .submit-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 28px rgba(0,229,255,0.22);
+      color: var(--bg-deep); border-color: var(--cyan);
+    }
+    .submit-btn:hover::after { opacity: 1; }
+    .submit-btn span { position: relative; z-index: 1; }
+
+    /* ── Team ── */
+    .team-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem;
+    }
+    .dev-card {
+      padding: 2rem 1.5rem; text-align: center;
+      transition: all 0.32s ease;
+    }
+    .dev-card:hover {
+      transform: translateY(-5px);
+      border-color: rgba(0,229,255,0.14);
+      background: var(--bg-surface-hover);
+    }
+    .dev-avatar {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: linear-gradient(135deg, rgba(0,229,255,0.1), rgba(245,158,11,0.08));
+      border: 1px solid rgba(0,229,255,0.18);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.1rem;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.05rem;
+      color: var(--cyan);
+    }
+    .dev-name {
+      font-family: 'Syne', sans-serif; font-size: 0.975rem; font-weight: 700;
+      color: var(--text-primary); margin-bottom: 0.3rem; letter-spacing: -0.01em;
+    }
+    .dev-role {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--cyan); opacity: 0.75;
+    }
+
+    /* ── Footer ── */
+    footer {
+      border-top: 1px solid var(--border); padding: 3.25rem 0;
+    }
+    .footer-inner {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 1.1rem; text-align: center;
+    }
+    .footer-logo {
+      font-family: 'Syne', sans-serif; font-size: 1.45rem; font-weight: 800;
+      letter-spacing: -0.04em;
+      background: linear-gradient(135deg, var(--cyan), var(--amber));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .footer-email a {
+      color: var(--cyan); text-decoration: none; font-size: 0.88rem;
+      font-weight: 500; transition: color 0.2s;
+    }
+    .footer-email a:hover { color: var(--amber); }
+    .footer-copy { font-size: 0.76rem; color: var(--text-muted); }
+
+    /* ── Responsive ── */
+    @media (max-width: 880px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .mission-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .specs-grid { grid-template-columns: 1fr; }
+      .metrics-row { grid-template-columns: 1fr; }
+      .metric-cell::after { display: none; }
+      .pricing-grid { grid-template-columns: 1fr; }
+      .section { padding: 5rem 0; }
+      .hero { padding: 8rem 1.5rem 6rem; }
+    }
+    @media (max-width: 600px) {
+      .team-grid { grid-template-columns: 1fr; }
+      .form-inner { padding: 2rem 1.5rem; }
+      .mission-right { padding: 1.75rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-canvas"></div>
+  <div class="bg-grid"></div>
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div id="progress"></div>
+
+  <!-- ── NAV ── -->
+  <nav id="navbar">
+    <div class="nav-logo">SmartOS</div>
+    <ul class="nav-links">
+      <li><a href="#mission">Mission</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#metrics">Metrics</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#deploy" class="nav-cta">Deploy</a></li>
+    </ul>
+  </nav>
+
+  <!-- ── HERO ── -->
+  <section class="hero" id="home">
+    <div class="hero-pill reveal">
+      <span class="live-dot"></span>
+      v1.0 Production Release &nbsp;·&nbsp; The Educators Edition
+    </div>
+    <h1 class="hero-title reveal rd1">
+      <span class="w1">Smart</span>
+      <span class="w2">OS</span>
+    </h1>
+    <p class="hero-sub reveal rd2">
+      Sovereign infrastructure for Pakistani educational institutions — open, fast, and free.
+    </p>
+    <div class="badges reveal rd3">
+      <span class="badge">⚡ Optimized Kernel</span>
+      <span class="badge">🔒 System Lockdown</span>
+      <span class="badge">🐧 Fedora Base</span>
+      <span class="badge">🇵🇰 Sovereign Tech</span>
+    </div>
+    <div class="scroll-cue">
+      <span>Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+  </section>
+
+  <!-- ── MISSION ── -->
+  <section class="section" id="mission">
+    <div class="container">
+      <div class="mission-grid">
+        <div class="reveal">
+          <div class="eyebrow">Our Mission</div>
+          <h2>Built for<br><em>Pakistan's</em><br>Future</h2>
+          <div class="divider-line"></div>
+          <p>Eliminating structural dependency on foreign software — delivering a self-reliant, sustainable operating platform built entirely in Pakistan, for Pakistan.</p>
+        </div>
+        <div class="glass mission-right reveal rd2">
+          <p class="mission-quote">
+            SmartOS is custom-engineered to empower Pakistani schools with a secure, high-performance, and completely localized operating infrastructure. By deploying native open-source frameworks, our foundational goal is to completely eliminate expensive software licensing fees and reduce structural dependency on monolithic foreign corporate software like Microsoft Windows. We believe that national educational infrastructure should be self-reliant, sustainable, and built locally.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FEATURES ── -->
+  <section class="section" id="features">
+    <div class="container">
+      <div class="sec-head">
+        <div class="eyebrow" style="justify-content:center;margin:0 auto 1.1rem;">Capabilities</div>
+        <h2 class="sec-title reveal">Purpose-Built Features</h2>
+        <p class="sec-sub reveal rd1">Every capability engineered around the realities of Pakistani school computer labs.</p>
+      </div>
+      <div class="specs-grid">
+        <div class="glass spec-card reveal">
+          <div class="spec-num">01</div>
+          <span class="spec-icon">🖥️</span>
+          <h4 class="spec-title">Integrated Lab IDEs</h4>
+          <p class="spec-desc">Pre-packaged with VS Code and TurboWarp Desktop, giving students immediate access to industry-standard coding environments right out of the box.</p>
+          <div class="spec-tags">
+            <span class="spec-tag">VS Code</span>
+            <span class="spec-tag">TurboWarp</span>
+            <span class="spec-tag">Scratch 3</span>
+          </div>
+        </div>
+        <div class="glass spec-card reveal rd1">
+          <div class="spec-num">02</div>
+          <span class="spec-icon">🔐</span>
+          <h4 class="spec-title">Admin Exam Lock</h4>
+          <p class="spec-desc">Features hidden terminals and deeply restricted system configurations to prevent student tampering during critical examination periods.</p>
+          <div class="spec-tags">
+            <span class="spec-tag">Kiosk Mode</span>
+            <span class="spec-tag">Hidden Terminals</span>
+          </div>
+        </div>
+        <div class="glass spec-card reveal rd2">
+          <div class="spec-num">03</div>
+          <span class="spec-icon">⚡</span>
+          <h4 class="spec-title">Hardware Revitalization</h4>
+          <p class="spec-desc">Stripped of all background telemetry and unnecessary daemons, ensuring flawless execution speeds even on aging computer lab machines.</p>
+          <div class="spec-tags">
+            <span class="spec-tag">Zero Telemetry</span>
+            <span class="spec-tag">Lean Kernel</span>
+            <span class="spec-tag">Low RAM</span>
+          </div>
+        </div>
+        <div class="glass spec-card reveal rd3">
+          <div class="spec-num">04</div>
+          <span class="spec-icon">🎨</span>
+          <h4 class="spec-title">Custom School Branding</h4>
+          <p class="spec-desc">Built-in support for localized system identification, custom Plymouth boot graphics, and institutional logos across the full user interface.</p>
+          <div class="spec-tags">
+            <span class="spec-tag">Plymouth Themes</span>
+            <span class="spec-tag">Logo Integration</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── METRICS ── -->
+  <section class="section" id="metrics">
+    <div class="container">
+      <div class="glass metrics-wrap">
+        <div class="metrics-row">
+          <div class="metric-cell reveal">
+            <div class="metric-val c" data-target="0" data-prefix="0 " data-suffix=" PKR">0 PKR</div>
+            <div class="metric-label">Licensing Costs</div>
+            <div class="metric-note">Zero annual fees, forever</div>
+          </div>
+          <div class="metric-cell reveal rd1">
+            <div class="metric-val a" data-target="40" data-prefix="-" data-suffix="%">-40%</div>
+            <div class="metric-label">RAM Overhead</div>
+            <div class="metric-note">vs. Windows baseline</div>
+          </div>
+          <div class="metric-cell reveal rd2">
+            <div class="metric-val e" data-target="100" data-suffix="%">100%</div>
+            <div class="metric-label">National Self-Reliance</div>
+            <div class="metric-note">Open-source foundation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PRICING ── -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <div class="sec-head">
+        <div class="eyebrow" style="justify-content:center;margin:0 auto 1.1rem;">Support</div>
+        <h2 class="sec-title reveal">Sustain the Project</h2>
+        <p class="sec-sub reveal rd1">Your contribution keeps open-source education alive and actively developed.</p>
+      </div>
+      <div class="pricing-grid">
+        <div class="glass price-card reveal">
+          <p class="price-tier">Monthly Sustainer</p>
+          <div class="price-amount">10k <span>PKR / Mo</span></div>
+          <p class="price-desc">Continuous system updates, security patches, and development of new educational features delivered month-to-month.</p>
+        </div>
+        <div class="glass price-card featured reveal rd1">
+          <div class="rec-badge">Recommended</div>
+          <p class="price-tier">Lifetime Deployment</p>
+          <div class="price-amount">25k <span>PKR</span></div>
+          <p class="price-desc">A one-time investment for perpetual campus-wide deployment — directly funding the core project's long-term survival.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── DEPLOY FORM ── -->
+  <section class="section" id="deploy">
+    <div class="container">
+      <div class="sec-head">
+        <div class="eyebrow" style="justify-content:center;margin:0 auto 1.1rem;">Deploy</div>
+        <h2 class="sec-title reveal">Request Deployment</h2>
+        <p class="sec-sub reveal rd1">Initiate the setup process for your institution's computer lab infrastructure.</p>
+      </div>
+      <div class="form-outer">
+        <div class="glass form-inner reveal rd2">
+          <form onsubmit="event.preventDefault(); handleSubmit();">
+            <div class="form-group">
+              <label for="campusName">Campus / Branch Name</label>
+              <input type="text" id="campusName" class="glass-input" placeholder="e.g. Islamabad Central Campus" required>
+            </div>
+            <div class="form-group">
+              <label for="labComputers">Total Lab Computers</label>
+              <input type="number" id="labComputers" class="glass-input" placeholder="Number of machines" required>
+            </div>
+            <div class="form-group">
+              <label for="techNotes">Technical Hardware Notes</label>
+              <textarea id="techNotes" class="glass-input" placeholder="Detail current hardware specs (RAM, CPU architecture) or any special requirements..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn">
+              <span>Generate Deployment Proposal Blueprint →</span>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TEAM ── -->
+  <section class="section" id="team">
+    <div class="container">
+      <div class="sec-head">
+        <div class="eyebrow" style="justify-content:center;margin:0 auto 1.1rem;">The Architects</div>
+        <h2 class="sec-title reveal">System Architecture Team</h2>
+      </div>
+      <div class="team-grid">
+        <div class="glass dev-card reveal">
+          <div class="dev-avatar">NK</div>
+          <div class="dev-name">nadakhatan</div>
+          <div class="dev-role">Core Developer</div>
+        </div>
+        <div class="glass dev-card reveal rd1">
+          <div class="dev-avatar">MY</div>
+          <div class="dev-name">mrflexious</div>
+          <div class="dev-role">Core Developer</div>
+        </div>
+        <div class="glass dev-card reveal rd2">
+          <div class="dev-avatar">ZM</div>
+          <div class="dev-name">zakriya</div>
+          <div class="dev-role">Core Developer</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-logo">SmartOS</div>
+        <div class="footer-email">
+          <a href="mailto:zakiryamalik195@gmail.com">zakiryamalik195@gmail.com</a>
+        </div>
+        <p class="footer-copy">© 2026 SmartOS Project. Engineered for Independent Educational Ecosystems. All Rights Reserved.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    /* Progress bar */
+    window.addEventListener('scroll', () => {
+      const pct = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+      document.getElementById('progress').style.width = pct + '%';
+    });
+
+    /* Scroll reveal via IntersectionObserver */
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+    }, { threshold: 0.11 });
+    document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+    /* Trigger hero immediately */
+    setTimeout(() => {
+      document.querySelectorAll('.hero .reveal').forEach(el => el.classList.add('visible'));
+    }, 80);
+
+    /* Animated counters */
+    function runCounter(el) {
+      const target = parseFloat(el.dataset.target);
+      const prefix = el.dataset.prefix || '';
+      const suffix = el.dataset.suffix || '';
+      let start = null;
+      const dur = 1900;
+      (function step(ts) {
+        if (!start) start = ts;
+        const p = Math.min((ts - start) / dur, 1);
+        const e = 1 - Math.pow(1 - p, 3);
+        el.textContent = prefix + Math.round(e * target) + suffix;
+        if (p < 1) requestAnimationFrame(step);
+      })(performance.now());
+    }
+
+    const cio = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { runCounter(e.target); cio.unobserve(e.target); }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('.metric-val[data-target]').forEach(el => cio.observe(el));
+
+    /* Navbar opacity on scroll */
+    window.addEventListener('scroll', () => {
+      document.getElementById('navbar').style.background =
+        window.scrollY > 60 ? 'rgba(4,8,26,0.94)' : 'rgba(4,8,26,0.55)';
+    }, { passive: true });
+
+    /* Form success state */
+    function handleSubmit() {
+      const btn = document.querySelector('.submit-btn');
+      btn.innerHTML = '<span>✓ Request Sent — We\'ll Be In Touch Soon</span>';
+      btn.style.cssText += 'background:linear-gradient(135deg,rgba(16,185,129,0.14),rgba(16,185,129,0.06));border-color:rgba(16,185,129,0.35);color:#10B981;pointer-events:none;';
+    }
+  </script>
+</body>
+</html>
